@@ -26,6 +26,9 @@
 using namespace std;
 using namespace boost::property_tree;
 
+std::function<void (unsigned long)> Config::add_recv_len = [](unsigned long){};
+std::function<void (unsigned long)> Config::add_sent_len = [](unsigned long){};
+
 void Config::load(const string &filename) {
     ptree tree;
     read_json(filename, tree);

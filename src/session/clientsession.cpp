@@ -189,12 +189,14 @@ void ClientSession::in_recv(const string &data) {
             break;
         }
         case CONNECT: {
+            Config::add_sent_len(data.length());
             sent_len += data.length();
             first_packet_recv = true;
             out_write_buf += data;
             break;
         }
         case FORWARD: {
+            Config::add_sent_len(data.length());
             sent_len += data.length();
             out_async_write(data);
             break;
@@ -303,6 +305,7 @@ void ClientSession::in_sent() {
 
 void ClientSession::out_recv(const string &data) {
     if (status == FORWARD) {
+        Config::add_recv_len(data.length());
         recv_len += data.length();
         in_async_write(data);
     } else if (status == UDP_FORWARD) {
@@ -339,6 +342,7 @@ void ClientSession::udp_recv(const string &data, const udp::endpoint&) {
     size_t length = data.length() - 3 - address_len;
     Log::log_with_endpoint(in_endpoint, "sent a UDP packet of length " + to_string(length) + " bytes to " + address.address + ':' + to_string(address.port));
     string packet = data.substr(3, address_len) + char(uint8_t(length >> 8)) + char(uint8_t(length & 0xFF)) + "\r\n" + data.substr(address_len + 3);
+    Config::add_sent_len(packet.length());
     sent_len += length;
     if (status == CONNECT) {
         first_packet_recv = true;
@@ -373,6 +377,7 @@ void ClientSession::udp_sent() {
         }
         string reply = string("\x00\x00\x00", 3) + udp_data_buf.substr(0, address_len) + packet.payload;
         udp_data_buf = udp_data_buf.substr(packet_len);
+        Config::add_recv_len(packet.length);
         recv_len += packet.length;
         udp_async_write(reply, udp_recv_endpoint);
     }

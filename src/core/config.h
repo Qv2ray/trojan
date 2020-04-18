@@ -24,6 +24,7 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include "log.h"
+#include <functional>
 
 class Config {
 public:
@@ -85,6 +86,8 @@ public:
     void populate(const std::string &JSON);
     bool sip003();
     static std::string SHA224(const std::string &message);
+    static std::function<void (unsigned long)> add_recv_len;
+    static std::function<void (unsigned long)> add_sent_len;
 private:
     void populate(const boost::property_tree::ptree &tree);
 };
